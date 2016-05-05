@@ -6,11 +6,19 @@
       "defaultValue": null,
       "type": "SecureString"
     },
+    "virtualMachines_SQLVM1_Witness_adminPassword": {
+      "defaultValue": null,
+      "type": "SecureString"
+    },
     "virtualMachines_SQLVM2_MIrror_adminPassword": {
       "defaultValue": null,
       "type": "SecureString"
     },
     "virtualMachines_SQLVM1_Primary_name": {
+      "defaultValue": "SQLVM1-Primary",
+      "type": "String"
+    },
+    "virtualMachines_SQLVM1_Witness_name": {
       "defaultValue": "SQLVM1-Primary",
       "type": "String"
     },
@@ -22,12 +30,20 @@
       "defaultValue": "sqlvm1-primary672",
       "type": "String"
     },
+    "networkInterfaces_sqlvm1_witness672_name": {
+      "defaultValue": "sqlvm1-primary672",
+      "type": "String"
+    },
     "networkInterfaces_sqlvm2_mirror245_name": {
       "defaultValue": "sqlvm2-mirror245",
       "type": "String"
     },
     "publicIPAddresses_SQLVM1_Primary_name": {
       "defaultValue": "SQLVM1-Primary",
+      "type": "String"
+    },
+    "publicIPAddresses_SQLVM1_witness_name": {
+      "defaultValue": "SQLVM1-witness",
       "type": "String"
     },
     "publicIPAddresses_SQLVM2_MIrror_name": {
@@ -75,7 +91,8 @@
   },
   "variables": {
     "vNet to vNET VPNTemplateFilePath": "https://github.com/amalik99/Amit/blob/master/vNet%20to%20vNET%20VPN.json",
-    "vNet to vNET VPNTemplateParametersFilePath": "https://github.com/amalik99/Amit/blob/master/vNet%20to%20vNET%20VPN.parameters.json"
+    "vNet to vNET VPNTemplateParametersFilePath": "https://github.com/amalik99/Amit/blob/master/vNet%20to%20vNET%20VPN.parameters.json",
+      "SQL-DB-Create-ScriptScriptFilePath": "ARM SQL VM Deploy/CustomScripts/SQL-DB-Create-Script.ps1"
   },
   "resources": [
     {
@@ -136,6 +153,95 @@
       "dependsOn": [
         "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_sqldc123_name'))]",
         "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaces_sqlvm1_primary672_name'))]"
+      ],
+      "resources": [
+        {
+          "name": "SQL-DB-Create-Script",
+          "type": "extensions",
+          "location": "eastus",
+          "apiVersion": "2015-06-15",
+          "dependsOn": [
+            "[concat('Microsoft.Compute/virtualMachines/', parameters('virtualMachines_SQLVM1_Primary_name'))]"
+          ],
+          "tags": {
+            "displayName": "SQL-DB-Create-Script"
+          },
+          "properties": {
+            "publisher": "Microsoft.Compute",
+            "type": "CustomScriptExtension",
+            "typeHandlerVersion": "1.4",
+            "autoUpgradeMinorVersion": true,
+            "settings": {
+              "fileUris": [
+                "[concat(parameters('_artifactsLocation'), '/', variables('SQL-DB-Create-ScriptScriptFilePath'), parameters('_artifactsLocationSasToken'))]"
+              ],
+              "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File ', variables('SQL-DB-Create-ScriptScriptFilePath'))]"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachines",
+      "name": "[parameters('virtualMachines_SQLVM1_Witness_name')]",
+      "apiVersion": "2015-06-15",
+      "location": "eastus",
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "Standard_A3"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "MicrosoftSQLServer",
+            "offer": "SQL2014SP1-WS2012R2",
+            "sku": "Enterprise",
+            "version": "latest"
+          },
+          "osDisk": {
+            "name": "[parameters('virtualMachines_SQLVM1_Witness_name')]",
+            "createOption": "FromImage",
+            "vhd": {
+              "uri": "[concat('https', '://', parameters('storageAccounts_sqldc123_name'), '.blob.core.windows.net', concat('/vhds/', parameters('virtualMachines_SQLVM1_Witness_name'),'201644192834.vhd'))]"
+            },
+            "caching": "ReadWrite"
+          },
+          "dataDisks": [
+            {
+              "lun": 0,
+              "name": "[concat(parameters('virtualMachines_SQLVM1_Witness_name'),'-disk-1')]",
+              "createOption": "Empty",
+              "vhd": {
+                "uri": "[concat('https', '://', parameters('storageAccounts_sqldc123_name'), '.blob.core.windows.net', concat('/vhds/', parameters('virtualMachines_SQLVM1_Primary_name'),'-disk-1-201644192834.vhd'))]"
+              },
+              "caching": "ReadOnly",
+              "diskSizeGB": 1023
+            }
+          ]
+        },
+        "osProfile": {
+          "computerName": "[parameters('virtualMachines_SQLVM1_Witness_name')]",
+          "adminUsername": "demoadmin",
+          "windowsConfiguration": {
+            "provisionVMAgent": true,
+            "enableAutomaticUpdates": true
+          },
+          "secrets": [ ],
+          "adminPassword": "[parameters('virtualMachines_SQLVM1_Witness_adminPassword')]"
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaces_sqlvm1_witness672_name'))]"
+            }
+          ]
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_sqldc123_name'))]",
+        "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaces_sqlvm1_witness672_name'))]"
+      ],
+      "resources": [
+
       ]
     },
     {
@@ -226,7 +332,38 @@
       },
       "dependsOn": [
         "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPAddresses_SQLVM1_Primary_name'))]",
-        "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworks_SQL_DC_vNET_name'))]"
+        "[resourceId('Microsoft.Network/virtualNetworks', parameters('existingVirtualNetworkNameDC '))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "[parameters('networkInterfaces_sqlvm1_witness672_name')]",
+      "apiVersion": "2015-06-15",
+      "location": "eastus",
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "privateIPAddress": "10.0.0.5",
+              "privateIPAllocationMethod": "Dynamic",
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPAddresses_SQLVM1_witness_name'))]"
+              },
+              "subnet": {
+                "id": "[concat(resourceId('Microsoft.Network/virtualNetworks', parameters('existingVirtualNetworkNameDC ')), '/subnets/default')]"
+              }
+            }
+          }
+        ],
+        "dnsSettings": {
+          "dnsServers": [ ]
+        },
+        "enableIPForwarding": false
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPAddresses_SQLVM1_witness_name'))]",
+        "[resourceId('Microsoft.Network/virtualNetworks', parameters('existingVirtualNetworkNameDC '))]"
       ]
     },
     {
@@ -257,12 +394,23 @@
       },
       "dependsOn": [
         "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPAddresses_SQLVM2_MIrror_name'))]",
-        "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworks_SQL_DR_vNET_name'))]"
+        "[resourceId('Microsoft.Network/virtualNetworks', parameters('existingVirtualNetworkNameDR'))]"
       ]
     },
     {
       "type": "Microsoft.Network/publicIPAddresses",
       "name": "[parameters('publicIPAddresses_SQLVM1_Primary_name')]",
+      "apiVersion": "2015-06-15",
+      "location": "eastus",
+      "properties": {
+        "publicIPAllocationMethod": "Dynamic",
+        "idleTimeoutInMinutes": 4
+      },
+      "dependsOn": [ ]
+    },
+    {
+      "type": "Microsoft.Network/publicIPAddresses",
+      "name": "[parameters('publicIPAddresses_SQLVM1_witness_name')]",
       "apiVersion": "2015-06-15",
       "location": "eastus",
       "properties": {
@@ -304,22 +452,22 @@
       },
       "dependsOn": [ ]
     },
-      {
-          "name": "vNet to vNET VPN",
-          "type": "Microsoft.Resources/deployments",
-          "apiVersion": "2015-01-01",
-          "dependsOn": [ ],
-          "properties": {
-              "mode": "Incremental",
-              "templateLink": {
-                  "uri": "[concat(parameters('_artifactsLocation'), '/', variables('vNet to vNET VPNTemplateFilePath'), parameters('_artifactsLocationSasToken'))]",
-                  "contentVersion": "1.0.0.0"
-              },
-              "parametersLink": {
-                  "uri": "[concat(parameters('_artifactsLocation'), '/', variables('vNet to vNET VPNTemplateParametersFilePath'), parameters('_artifactsLocationSasToken'))]",
-                  "contentVersion": "1.0.0.0"
-              }
-          }
+    {
+      "name": "vNet to vNET VPN",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2015-01-01",
+      "dependsOn": [ ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(parameters('_artifactsLocation'), '/', variables('vNet to vNET VPNTemplateFilePath'), parameters('_artifactsLocationSasToken'))]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parametersLink": {
+          "uri": "[concat(parameters('_artifactsLocation'), '/', variables('vNet to vNET VPNTemplateParametersFilePath'), parameters('_artifactsLocationSasToken'))]",
+          "contentVersion": "1.0.0.0"
+        }
       }
+    }
   ]
 }
