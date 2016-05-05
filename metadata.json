@@ -1,0 +1,7 @@
+{
+  "itemDisplayName": "Build SQL VM's in Diffrent Regions Connected via VPN",
+  "description": "Creates a two vNET in diffrent regions , connect them via VPN and then deploy SQL Servers inside that",
+  "summary": "Creates a virtual machine with RDP port",
+  "githubUsername": "amalik99",
+  "dateUpdated": "2015-05-04"
+}
