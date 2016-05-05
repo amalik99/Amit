@@ -79,7 +79,6 @@
   },
   "resources": [
     {
-      "comments": "Generalized from resource: '/subscriptions/368a1e91-73c9-4d65-a824-694e15bd0d75/resourceGroups/SQL_DC_DR/providers/Microsoft.Compute/virtualMachines/SQLVM1-Primary'.",
       "type": "Microsoft.Compute/virtualMachines",
       "name": "[parameters('virtualMachines_SQLVM1_Primary_name')]",
       "apiVersion": "2015-06-15",
@@ -140,7 +139,6 @@
       ]
     },
     {
-      "comments": "Generalized from resource: '/subscriptions/368a1e91-73c9-4d65-a824-694e15bd0d75/resourceGroups/SQL_DC_DR/providers/Microsoft.Compute/virtualMachines/SQLVM2-MIrror'.",
       "type": "Microsoft.Compute/virtualMachines",
       "name": "[parameters('virtualMachines_SQLVM2_MIrror_name')]",
       "apiVersion": "2015-06-15",
@@ -201,7 +199,6 @@
       ]
     },
     {
-      "comments": "Generalized from resource: '/subscriptions/368a1e91-73c9-4d65-a824-694e15bd0d75/resourceGroups/SQL_DC_DR/providers/Microsoft.Network/networkInterfaces/sqlvm1-primary672'.",
       "type": "Microsoft.Network/networkInterfaces",
       "name": "[parameters('networkInterfaces_sqlvm1_primary672_name')]",
       "apiVersion": "2015-06-15",
@@ -233,7 +230,6 @@
       ]
     },
     {
-      "comments": "Generalized from resource: '/subscriptions/368a1e91-73c9-4d65-a824-694e15bd0d75/resourceGroups/SQL_DC_DR/providers/Microsoft.Network/networkInterfaces/sqlvm2-mirror245'.",
       "type": "Microsoft.Network/networkInterfaces",
       "name": "[parameters('networkInterfaces_sqlvm2_mirror245_name')]",
       "apiVersion": "2015-06-15",
@@ -265,7 +261,6 @@
       ]
     },
     {
-      "comments": "Generalized from resource: '/subscriptions/368a1e91-73c9-4d65-a824-694e15bd0d75/resourceGroups/SQL_DC_DR/providers/Microsoft.Network/publicIPAddresses/SQLVM1-Primary'.",
       "type": "Microsoft.Network/publicIPAddresses",
       "name": "[parameters('publicIPAddresses_SQLVM1_Primary_name')]",
       "apiVersion": "2015-06-15",
@@ -277,7 +272,6 @@
       "dependsOn": [ ]
     },
     {
-      "comments": "Generalized from resource: '/subscriptions/368a1e91-73c9-4d65-a824-694e15bd0d75/resourceGroups/SQL_DC_DR/providers/Microsoft.Network/publicIPAddresses/SQLVM2-MIrror'.",
       "type": "Microsoft.Network/publicIPAddresses",
       "name": "[parameters('publicIPAddresses_SQLVM2_MIrror_name')]",
       "apiVersion": "2015-06-15",
@@ -289,7 +283,6 @@
       "dependsOn": [ ]
     },
     {
-      "comments": "Generalized from resource: '/subscriptions/368a1e91-73c9-4d65-a824-694e15bd0d75/resourceGroups/sql_dc_dr/providers/Microsoft.Storage/storageAccounts/sqldc123'.",
       "type": "Microsoft.Storage/storageAccounts",
       "name": "[parameters('storageAccounts_sqldc123_name')]",
       "apiVersion": "2015-06-15",
@@ -301,7 +294,6 @@
       "dependsOn": [ ]
     },
     {
-      "comments": "Generalized from resource: '/subscriptions/368a1e91-73c9-4d65-a824-694e15bd0d75/resourceGroups/sql_dc_dr/providers/Microsoft.Storage/storageAccounts/sqldr1225'.",
       "type": "Microsoft.Storage/storageAccounts",
       "name": "[parameters('storageAccounts_sqldr1225_name')]",
       "apiVersion": "2015-06-15",
