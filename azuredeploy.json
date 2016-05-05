@@ -74,8 +74,9 @@
     }
   },
   "variables": {
-      "vNet to vNET VPNTemplateFilePath": "ARM SQL VM Deploy/Templates/vNet to vNET VPN.json",
-      "vNet to vNET VPNTemplateParametersFilePath": "ARM SQL VM Deploy/Templates/vNet to vNET VPN.parameters.json" },
+    "vNet to vNET VPNTemplateFilePath": "https://github.com/amalik99/Amit/blob/master/vNet%20to%20vNET%20VPN.json",
+    "vNet to vNET VPNTemplateParametersFilePath": "https://github.com/amalik99/Amit/blob/master/vNet%20to%20vNET%20VPN.parameters.json"
+  },
   "resources": [
     {
       "comments": "Generalized from resource: '/subscriptions/368a1e91-73c9-4d65-a824-694e15bd0d75/resourceGroups/SQL_DC_DR/providers/Microsoft.Compute/virtualMachines/SQLVM1-Primary'.",
