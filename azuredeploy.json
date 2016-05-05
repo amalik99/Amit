@@ -1,0 +1,332 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "virtualMachines_SQLVM1_Primary_adminPassword": {
+      "defaultValue": null,
+      "type": "SecureString"
+    },
+    "virtualMachines_SQLVM2_MIrror_adminPassword": {
+      "defaultValue": null,
+      "type": "SecureString"
+    },
+    "virtualMachines_SQLVM1_Primary_name": {
+      "defaultValue": "SQLVM1-Primary",
+      "type": "String"
+    },
+    "virtualMachines_SQLVM2_MIrror_name": {
+      "defaultValue": "SQLVM2-MIrror",
+      "type": "String"
+    },
+    "networkInterfaces_sqlvm1_primary672_name": {
+      "defaultValue": "sqlvm1-primary672",
+      "type": "String"
+    },
+    "networkInterfaces_sqlvm2_mirror245_name": {
+      "defaultValue": "sqlvm2-mirror245",
+      "type": "String"
+    },
+    "publicIPAddresses_SQLVM1_Primary_name": {
+      "defaultValue": "SQLVM1-Primary",
+      "type": "String"
+    },
+    "publicIPAddresses_SQLVM2_MIrror_name": {
+      "defaultValue": "SQLVM2-MIrror",
+      "type": "String"
+    },
+    "existingVirtualNetworkNameDC ": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the existing VNET"
+      }
+    },
+    "existingVirtualNetworkNameDR": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the existing VNET"
+      }
+    },
+    "subnetNameDC": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the subnet in the virtual network you want to use"
+      }
+    },
+    "subnetNameDR": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the subnet in the virtual network you want to use"
+      }
+    },
+    "storageAccounts_sqldc123_name": {
+      "defaultValue": "sqldc123",
+      "type": "String"
+    },
+    "storageAccounts_sqldr1225_name": {
+      "defaultValue": "sqldr1225",
+      "type": "String"
+    },
+    "_artifactsLocation": {
+      "type": "string"
+    },
+    "_artifactsLocationSasToken": {
+      "type": "securestring"
+    }
+  },
+  "variables": {
+      "vNet to vNET VPNTemplateFilePath": "ARM SQL VM Deploy/Templates/vNet to vNET VPN.json",
+      "vNet to vNET VPNTemplateParametersFilePath": "ARM SQL VM Deploy/Templates/vNet to vNET VPN.parameters.json" },
+  "resources": [
+    {
+      "comments": "Generalized from resource: '/subscriptions/368a1e91-73c9-4d65-a824-694e15bd0d75/resourceGroups/SQL_DC_DR/providers/Microsoft.Compute/virtualMachines/SQLVM1-Primary'.",
+      "type": "Microsoft.Compute/virtualMachines",
+      "name": "[parameters('virtualMachines_SQLVM1_Primary_name')]",
+      "apiVersion": "2015-06-15",
+      "location": "eastus",
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "Standard_A3"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "MicrosoftSQLServer",
+            "offer": "SQL2014SP1-WS2012R2",
+            "sku": "Enterprise",
+            "version": "latest"
+          },
+          "osDisk": {
+            "name": "[parameters('virtualMachines_SQLVM1_Primary_name')]",
+            "createOption": "FromImage",
+            "vhd": {
+              "uri": "[concat('https', '://', parameters('storageAccounts_sqldc123_name'), '.blob.core.windows.net', concat('/vhds/', parameters('virtualMachines_SQLVM1_Primary_name'),'201644192834.vhd'))]"
+            },
+            "caching": "ReadWrite"
+          },
+          "dataDisks": [
+            {
+              "lun": 0,
+              "name": "[concat(parameters('virtualMachines_SQLVM1_Primary_name'),'-disk-1')]",
+              "createOption": "Empty",
+              "vhd": {
+                "uri": "[concat('https', '://', parameters('storageAccounts_sqldc123_name'), '.blob.core.windows.net', concat('/vhds/', parameters('virtualMachines_SQLVM1_Primary_name'),'-disk-1-201644192834.vhd'))]"
+              },
+              "caching": "ReadOnly",
+              "diskSizeGB": 1023
+            }
+          ]
+        },
+        "osProfile": {
+          "computerName": "[parameters('virtualMachines_SQLVM1_Primary_name')]",
+          "adminUsername": "demoadmin",
+          "windowsConfiguration": {
+            "provisionVMAgent": true,
+            "enableAutomaticUpdates": true
+          },
+          "secrets": [ ],
+          "adminPassword": "[parameters('virtualMachines_SQLVM1_Primary_adminPassword')]"
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaces_sqlvm1_primary672_name'))]"
+            }
+          ]
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_sqldc123_name'))]",
+        "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaces_sqlvm1_primary672_name'))]"
+      ]
+    },
+    {
+      "comments": "Generalized from resource: '/subscriptions/368a1e91-73c9-4d65-a824-694e15bd0d75/resourceGroups/SQL_DC_DR/providers/Microsoft.Compute/virtualMachines/SQLVM2-MIrror'.",
+      "type": "Microsoft.Compute/virtualMachines",
+      "name": "[parameters('virtualMachines_SQLVM2_MIrror_name')]",
+      "apiVersion": "2015-06-15",
+      "location": "southeastasia",
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "Standard_A3"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "MicrosoftSQLServer",
+            "offer": "SQL2014SP1-WS2012R2",
+            "sku": "Enterprise",
+            "version": "latest"
+          },
+          "osDisk": {
+            "name": "[parameters('virtualMachines_SQLVM2_MIrror_name')]",
+            "createOption": "FromImage",
+            "vhd": {
+              "uri": "[concat('https', '://', parameters('storageAccounts_sqldr1225_name'), '.blob.core.windows.net', concat('/vhds/', parameters('virtualMachines_SQLVM2_MIrror_name'),'201644193217.vhd'))]"
+            },
+            "caching": "ReadWrite"
+          },
+          "dataDisks": [
+            {
+              "lun": 0,
+              "name": "[concat(parameters('virtualMachines_SQLVM2_MIrror_name'),'-disk-1')]",
+              "createOption": "Empty",
+              "vhd": {
+                "uri": "[concat('https', '://', parameters('storageAccounts_sqldr1225_name'), '.blob.core.windows.net', concat('/vhds/', parameters('virtualMachines_SQLVM2_MIrror_name'),'-disk-1-201644193217.vhd'))]"
+              },
+              "caching": "ReadOnly",
+              "diskSizeGB": 1023
+            }
+          ]
+        },
+        "osProfile": {
+          "computerName": "[parameters('virtualMachines_SQLVM2_MIrror_name')]",
+          "adminUsername": "demoadmin",
+          "windowsConfiguration": {
+            "provisionVMAgent": true,
+            "enableAutomaticUpdates": true
+          },
+          "secrets": [ ],
+          "adminPassword": "[parameters('virtualMachines_SQLVM2_MIrror_adminPassword')]"
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaces_sqlvm2_mirror245_name'))]"
+            }
+          ]
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_sqldr1225_name'))]",
+        "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaces_sqlvm2_mirror245_name'))]"
+      ]
+    },
+    {
+      "comments": "Generalized from resource: '/subscriptions/368a1e91-73c9-4d65-a824-694e15bd0d75/resourceGroups/SQL_DC_DR/providers/Microsoft.Network/networkInterfaces/sqlvm1-primary672'.",
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "[parameters('networkInterfaces_sqlvm1_primary672_name')]",
+      "apiVersion": "2015-06-15",
+      "location": "eastus",
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "privateIPAddress": "10.0.0.4",
+              "privateIPAllocationMethod": "Dynamic",
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPAddresses_SQLVM1_Primary_name'))]"
+              },
+              "subnet": {
+                "id": "[concat(resourceId('Microsoft.Network/virtualNetworks', parameters('existingVirtualNetworkNameDC ')), '/subnets/default')]"
+              }
+            }
+          }
+        ],
+        "dnsSettings": {
+          "dnsServers": [ ]
+        },
+        "enableIPForwarding": false
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPAddresses_SQLVM1_Primary_name'))]",
+        "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworks_SQL_DC_vNET_name'))]"
+      ]
+    },
+    {
+      "comments": "Generalized from resource: '/subscriptions/368a1e91-73c9-4d65-a824-694e15bd0d75/resourceGroups/SQL_DC_DR/providers/Microsoft.Network/networkInterfaces/sqlvm2-mirror245'.",
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "[parameters('networkInterfaces_sqlvm2_mirror245_name')]",
+      "apiVersion": "2015-06-15",
+      "location": "southeastasia",
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "privateIPAddress": "172.16.0.4",
+              "privateIPAllocationMethod": "Dynamic",
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPAddresses_SQLVM2_MIrror_name'))]"
+              },
+              "subnet": {
+                "id": "[concat(resourceId('Microsoft.Network/virtualNetworks', parameters('existingVirtualNetworkNameDR')), '/subnets/default')]"
+              }
+            }
+          }
+        ],
+        "dnsSettings": {
+          "dnsServers": [ ]
+        },
+        "enableIPForwarding": false
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPAddresses_SQLVM2_MIrror_name'))]",
+        "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworks_SQL_DR_vNET_name'))]"
+      ]
+    },
+    {
+      "comments": "Generalized from resource: '/subscriptions/368a1e91-73c9-4d65-a824-694e15bd0d75/resourceGroups/SQL_DC_DR/providers/Microsoft.Network/publicIPAddresses/SQLVM1-Primary'.",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "name": "[parameters('publicIPAddresses_SQLVM1_Primary_name')]",
+      "apiVersion": "2015-06-15",
+      "location": "eastus",
+      "properties": {
+        "publicIPAllocationMethod": "Dynamic",
+        "idleTimeoutInMinutes": 4
+      },
+      "dependsOn": [ ]
+    },
+    {
+      "comments": "Generalized from resource: '/subscriptions/368a1e91-73c9-4d65-a824-694e15bd0d75/resourceGroups/SQL_DC_DR/providers/Microsoft.Network/publicIPAddresses/SQLVM2-MIrror'.",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "name": "[parameters('publicIPAddresses_SQLVM2_MIrror_name')]",
+      "apiVersion": "2015-06-15",
+      "location": "southeastasia",
+      "properties": {
+        "publicIPAllocationMethod": "Dynamic",
+        "idleTimeoutInMinutes": 4
+      },
+      "dependsOn": [ ]
+    },
+    {
+      "comments": "Generalized from resource: '/subscriptions/368a1e91-73c9-4d65-a824-694e15bd0d75/resourceGroups/sql_dc_dr/providers/Microsoft.Storage/storageAccounts/sqldc123'.",
+      "type": "Microsoft.Storage/storageAccounts",
+      "name": "[parameters('storageAccounts_sqldc123_name')]",
+      "apiVersion": "2015-06-15",
+      "location": "eastus",
+      "tags": { },
+      "properties": {
+        "accountType": "Standard_LRS"
+      },
+      "dependsOn": [ ]
+    },
+    {
+      "comments": "Generalized from resource: '/subscriptions/368a1e91-73c9-4d65-a824-694e15bd0d75/resourceGroups/sql_dc_dr/providers/Microsoft.Storage/storageAccounts/sqldr1225'.",
+      "type": "Microsoft.Storage/storageAccounts",
+      "name": "[parameters('storageAccounts_sqldr1225_name')]",
+      "apiVersion": "2015-06-15",
+      "location": "southeastasia",
+      "tags": { },
+      "properties": {
+        "accountType": "Standard_LRS"
+      },
+      "dependsOn": [ ]
+    },
+      {
+          "name": "vNet to vNET VPN",
+          "type": "Microsoft.Resources/deployments",
+          "apiVersion": "2015-01-01",
+          "dependsOn": [ ],
+          "properties": {
+              "mode": "Incremental",
+              "templateLink": {
+                  "uri": "[concat(parameters('_artifactsLocation'), '/', variables('vNet to vNET VPNTemplateFilePath'), parameters('_artifactsLocationSasToken'))]",
+                  "contentVersion": "1.0.0.0"
+              },
+              "parametersLink": {
+                  "uri": "[concat(parameters('_artifactsLocation'), '/', variables('vNet to vNET VPNTemplateParametersFilePath'), parameters('_artifactsLocationSasToken'))]",
+                  "contentVersion": "1.0.0.0"
+              }
+          }
+      }
+  ]
+}
