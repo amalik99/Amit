@@ -1,0 +1,33 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "virtualMachineName": {
+            "value": "testvm"
+        },
+        "virtualMachineSize": {
+            "value": "Standard_E16s_v3"
+        },
+        "adminUsername": {
+            "value": "amt"
+        },
+        "virtualNetworkName": {
+            "value": "amitmalik-vnet"
+        },
+        "networkInterfaceName": {
+            "value": "testvm307"
+        },
+        "adminPassword": {
+            "value": null
+        },
+        "addressPrefix": {
+            "value": "10.0.0.0/24"
+        },
+        "subnetName": {
+            "value": "default"
+        },
+        "subnetPrefix": {
+            "value": "10.0.0.0/24"
+        }
+    }
+}
