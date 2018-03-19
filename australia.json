@@ -41,7 +41,7 @@
     },
     "variables": {
         "vnetId": "[resourceId('amitmalik','Microsoft.Network/virtualNetworks', parameters('virtualNetworkName'))]",
-        "subnetRef": "[concat(variables('vnetId'), '/subnets/', parameters('subnetName'))]"
+                "SubnetRef": "[concat(resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworkName')), '/subnets/', parameters('subnetName'))]"
     },
     "resources": [
         {
